@@ -85,6 +85,7 @@ public class MybatisGenerator {
         jdbcConnection.setPassword(this.password);
 
         context.getJavaModelGeneratorConfiguration().setTargetPackage(this.packageName);
+        context.getSqlMapGeneratorConfiguration().setTargetPackage(this.packageName);
 
         DefaultShellCallback callback = new DefaultShellCallback(true);
         MyBatisGenerator myBatisGenerator = new MyBatisGenerator(config, callback, warnings);

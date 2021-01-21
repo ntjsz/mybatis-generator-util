@@ -3,8 +3,12 @@
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
     <context id="simple" targetRuntime="MyBatis3Simple">
+        <property name="autoDelimitKeywords" value="true"/>
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
 
-        <plugin type="CustomizedMybatisPlugin"></plugin>
+        <plugin type="CustomizedMybatisPlugin"/>
+        <plugin type="org.mybatis.generator.plugins.UnmergeableXmlMappersPlugin"/>
         <commentGenerator>
             <property name="suppressAllComments" value="true"/>
         </commentGenerator>
@@ -15,6 +19,7 @@
 
 
         <javaModelGenerator targetPackage="" targetProject="src/main/java"/>
+        <sqlMapGenerator targetPackage="" targetProject="src/main/resources/mapper/"/>
         <table tableName="%"/>
     </context>
 </generatorConfiguration>
