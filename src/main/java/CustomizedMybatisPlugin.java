@@ -10,7 +10,6 @@ import org.mybatis.generator.api.dom.xml.TextElement;
 import org.mybatis.generator.api.dom.xml.VisitableElement;
 import org.mybatis.generator.api.dom.xml.XmlElement;
 
-import java.beans.beancontext.BeanContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +17,7 @@ import java.util.List;
  * add lombok
  * ignore getter setter
  * ignore java reserved words
+ * ignore xml sql except selectAll
  */
 public class CustomizedMybatisPlugin extends PluginAdapter {
     @Override
@@ -138,10 +138,5 @@ public class CustomizedMybatisPlugin extends PluginAdapter {
         }
         rtn.addAll(srcList.subList(index, srcList.size()));
         return rtn;
-    }
-
-    private String addLineSeparator(String s) {
-        String lineSeparator = System.lineSeparator();
-        return s.replaceAll(" ", lineSeparator);
     }
 }
