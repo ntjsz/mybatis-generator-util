@@ -1,3 +1,4 @@
+import com.google.common.base.Strings;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.config.Configuration;
 import org.mybatis.generator.config.Context;
@@ -8,10 +9,7 @@ import org.mybatis.generator.internal.DefaultShellCallback;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public class MybatisGenerator {
     private String jdbcUrl;
@@ -21,6 +19,8 @@ public class MybatisGenerator {
     private String schemaName;
     private String packageName;
 
+    private String tableName;
+
     private void init() throws Exception {
         Properties properties = new Properties();
         properties.load(new FileReader(getFileInClasspath("application.properties")));
@@ -29,15 +29,29 @@ public class MybatisGenerator {
         String projectTemplate = null;
         for (String key : strings) {
             String k = extractKey(key);
-            if ("url".equals(k) || "jdbcUrl".equals(k)) {
-                String value = properties.getProperty(key);
-                if (value.contains("jdbc:mysql:")) {
-                    projectTemplate = key;
-                    this.jdbcUrl = value;
+            switch (k) {
+                case "url":
+                case "jdbcUrl": {
+                    String value = properties.getProperty(key);
+                    if (value.contains("jdbc:mysql:")) {
+                        projectTemplate = key;
+                        this.jdbcUrl = handleJdbcUrl(value);
+                    }
                 }
+                break;
+
+                case "username":
+                    this.username = properties.getProperty(key);
+                    break;
+
+                case "password":
+                    this.password = properties.getProperty(key);
+                    break;
+
+                case "tableName":
+                    this.tableName = properties.getProperty(key);
+                    break;
             }
-            if ("username".equals(k)) this.username = properties.getProperty(key);
-            if ("password".equals(k)) this.password = properties.getProperty(key);
         }
 
 
@@ -53,7 +67,16 @@ public class MybatisGenerator {
         }
 
         this.packageName = this.datasource + "." + this.schemaName.replaceAll("_", "");
+
+        if (Strings.isNullOrEmpty(this.tableName.trim())) {
+            this.tableName = "%";
+        }
     }
+
+    private String handleJdbcUrl(String rawUrl) {
+        return rawUrl.replaceAll("&amp;", "&");
+    }
+
 
     private String extractKey(String propertyKey) {
         int start = propertyKey.lastIndexOf('.');
@@ -84,13 +107,17 @@ public class MybatisGenerator {
         jdbcConnection.setUserId(this.username);
         jdbcConnection.setPassword(this.password);
 
-        context.getJavaModelGeneratorConfiguration().setTargetPackage(this.packageName);
+        context.getJavaModelGeneratorConfiguration().setTargetPackage("entity." + this.packageName);
         context.getSqlMapGeneratorConfiguration().setTargetPackage(this.packageName);
+
+        context.getTableConfigurations().get(0).setTableName(this.tableName);
 
         DefaultShellCallback callback = new DefaultShellCallback(true);
         MyBatisGenerator myBatisGenerator = new MyBatisGenerator(config, callback, warnings);
         myBatisGenerator.generate(null);
-        System.out.println(warnings);
+        if (!warnings.isEmpty()) {
+            System.out.println(warnings);
+        }
     }
 
     public void run() throws Exception {
